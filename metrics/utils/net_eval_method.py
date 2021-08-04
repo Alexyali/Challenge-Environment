@@ -4,6 +4,7 @@
 from utils.net_info import NetInfo
 import numpy as np
 from abc import ABC, abstractmethod
+import json
 
 
 class NetEvalMethod(ABC):
@@ -72,4 +73,8 @@ class NetEvalMethodNormal(NetEvalMethod):
                             100 * 0.2 * avg_recv_rate_score + \
                             100 * 0.3 * (1 - avg_loss_rate)
 
+        for ssrc in ssrc_info:
+            f = open("ssrc_" + str(ssrc) + ".log", "w")
+            f.write(json.dumps(ssrc_info[ssrc]))
+            f.close()
         return network_score
