@@ -75,6 +75,7 @@ class NetEvalMethodNormal(NetEvalMethod):
 
         for ssrc in ssrc_info:
             f = open("ssrc_" + str(ssrc) + ".log", "w")
+            ssrc_info[ssrc]["network_score"] = network_score
             f.write(json.dumps(ssrc_info[ssrc]))
             f.close()
         return network_score
