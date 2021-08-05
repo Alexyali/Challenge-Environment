@@ -5,6 +5,7 @@ from utils.net_info import NetInfo
 import numpy as np
 from abc import ABC, abstractmethod
 import json
+import matplotlib.pyplot as plt
 
 
 class NetEvalMethod(ABC):
@@ -74,9 +75,20 @@ class NetEvalMethodNormal(NetEvalMethod):
                             100 * 0.3 * (1 - avg_loss_rate)
 
         for ssrc in ssrc_info:
-            f = open("ssrc_" + str(ssrc) + ".log", "w")
-            ssrc_info[ssrc]["network_score"] = network_score
+            f = open("result/ssrc_" + str(ssrc) + ".log", "w")
             ssrc_info[ssrc]["avg_loss_rate"] = avg_loss_rate
+            ssrc_info[ssrc]["avg_recv_rate_score"] = avg_recv_rate_score
+            ssrc_info[ssrc]["avg_delay_score"] = avg_delay_score
+            ssrc_info[ssrc]["network_score"] = network_score
             f.write(json.dumps(ssrc_info[ssrc]))
             f.close()
+
+            delay_pencentile_95 = np.percentile(ssrc_info[ssrc]["scale_delay_list"], 95, interpolation="nearest")
+            plt.figure()
+            plt.plot(ssrc_info[ssrc]["delay_list"])
+            plt.ylabel("packet delay/ms")
+            plt.xlabel("packets count")
+            plt.title("throughput="+str(round(ssrc_info[ssrc]["avg_recv_rate"]*8, 3))+"Kbps"
+                        + "  delay_95%="+str(delay_pencentile_95)+"ms")
+            plt.savefig("result/ssrc_" + str(ssrc) + "_delay.png")
         return network_score
