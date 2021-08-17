@@ -16,7 +16,7 @@ class NetInfo(object):
             raise ValueError("Error net path")
 
         ret = []
-        with open(self.net_path, 'r') as f:
+        with open(self.net_path, 'r', encoding='utf-8', errors="ignore") as f:
             for line in f.readlines():
                 if ("remote_estimator_proxy.cc" not in line):
                     continue
