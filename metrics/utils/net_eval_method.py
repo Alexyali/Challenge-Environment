@@ -91,7 +91,7 @@ class NetEvalMethodNormal(NetEvalMethod):
             plt.plot(ssrc_info[ssrc]["delay_list"])
             plt.ylabel("packet delay/ms")
             plt.xlabel("packets count")
-            delay_pencentile_95 = np.percentile(ssrc_info[ssrc]["scale_delay_list"], 95, interpolation="nearest")
+            delay_pencentile_95 = np.percentile(ssrc_info[ssrc]["delay_list"], 95, interpolation="nearest")
             plt.title("delay_95%="+str(delay_pencentile_95)+"ms")
             plt.savefig("result/ssrc_" + str(ssrc) + "_delay.png")
 
