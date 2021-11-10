@@ -47,14 +47,14 @@ class NetEvalMethodNormal(NetEvalMethod):
             if ssrc in self.last_seqNo:
                 loss_count += max(0, sequence_number - self.last_seqNo[ssrc] - 1)
             self.last_seqNo[ssrc] = sequence_number
-                
+
             ssrc_info[ssrc]["delay_list"].append(ssrc_info[ssrc]["time_delta"] + tmp_delay)
             ssrc_info[ssrc]["received_nbytes"] += item["packetInfo"]["payloadSize"]
             if item["packetInfo"]["arrivalTimeMs"] != ssrc_info[ssrc]["start_recv_time"] and (item["packetInfo"]["arrivalTimeMs"] - ssrc_info[ssrc]["start_recv_time"]) > 1000:
                 ssrc_info[ssrc]["recv_rate"].append(ssrc_info[ssrc]["received_nbytes"] / (item["packetInfo"]["arrivalTimeMs"] - ssrc_info[ssrc]["start_recv_time"])*8)
                 ssrc_info[ssrc]["start_recv_time"] = item["packetInfo"]["arrivalTimeMs"]
                 ssrc_info[ssrc]["received_nbytes"] = 0
-            
+
         # scale delay list
         for ssrc in ssrc_info:
             min_delay = min(ssrc_info[ssrc]["delay_list"])
@@ -84,7 +84,7 @@ class NetEvalMethodNormal(NetEvalMethod):
             ssrc_info[ssrc]["network_score"] = network_score
             f.write(json.dumps(ssrc_info[ssrc]))
             f.close()
-            print(ssrc)
+            print("ssrc:", ssrc)
 
             plt.figure()
             plt.grid()
@@ -92,6 +92,7 @@ class NetEvalMethodNormal(NetEvalMethod):
             plt.ylabel("packet delay/ms")
             plt.xlabel("packets count")
             delay_pencentile_95 = np.percentile(ssrc_info[ssrc]["delay_list"], 95, interpolation="nearest")
+            print("delay_95%:", delay_pencentile_95,"ms")
             plt.title("delay_95%="+str(delay_pencentile_95)+"ms")
             plt.savefig("result/ssrc_" + str(ssrc) + "_delay.png")
 
@@ -101,5 +102,6 @@ class NetEvalMethodNormal(NetEvalMethod):
             plt.ylabel("receive rate/kbps")
             plt.xlabel("time/s")
             plt.title("throughput="+str(round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3))+"Kbps")
+            print("avg throughput:", round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3),"kbps")
             plt.savefig("result/ssrc_" + str(ssrc) + "_rate.png")
         return network_score
