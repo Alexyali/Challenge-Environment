@@ -7,6 +7,8 @@ from abc import ABC, abstractmethod
 import json
 import matplotlib.pyplot as plt
 
+delay_log_path = "/home/alex/Challenge-Environment/paper_result/cldcc_delay.log"
+tput_log_path = "/home/alex/Challenge-Environment/paper_result/cldcc_tput.log"
 
 class NetEvalMethod(ABC):
     @abstractmethod
@@ -42,13 +44,16 @@ class NetEvalMethodNormal(NetEvalMethod):
                     "delay_list" : [],
                     "received_nbytes" : 0,
                     "start_recv_time" : item["packetInfo"]["arrivalTimeMs"],
-                    "recv_rate" : []
+                    "first_recv_time" : item["packetInfo"]["arrivalTimeMs"],
+                    "recv_rate" : [],
+                    "recv_timestamp" : []
                 }
             if ssrc in self.last_seqNo:
                 loss_count += max(0, sequence_number - self.last_seqNo[ssrc] - 1)
             self.last_seqNo[ssrc] = sequence_number
 
             ssrc_info[ssrc]["delay_list"].append(ssrc_info[ssrc]["time_delta"] + tmp_delay)
+            ssrc_info[ssrc]["recv_timestamp"].append((item["packetInfo"]["arrivalTimeMs"]-ssrc_info[ssrc]["first_recv_time"])/1000.0)
             ssrc_info[ssrc]["received_nbytes"] += item["packetInfo"]["payloadSize"]
             if item["packetInfo"]["arrivalTimeMs"] != ssrc_info[ssrc]["start_recv_time"] and (item["packetInfo"]["arrivalTimeMs"] - ssrc_info[ssrc]["start_recv_time"]) > 1000:
                 ssrc_info[ssrc]["recv_rate"].append(ssrc_info[ssrc]["received_nbytes"] / (item["packetInfo"]["arrivalTimeMs"] - ssrc_info[ssrc]["start_recv_time"])*8)
@@ -77,6 +82,8 @@ class NetEvalMethodNormal(NetEvalMethod):
                             100 * 0.3 * (1 - avg_loss_rate)
 
         for ssrc in ssrc_info:
+            if len(ssrc_info[ssrc]["delay_list"]) < 10:
+                continue
             f = open("result/ssrc_" + str(ssrc) + ".log", "w")
             ssrc_info[ssrc]["avg_loss_rate"] = avg_loss_rate
             ssrc_info[ssrc]["avg_recv_rate_score"] = avg_recv_rate_score
@@ -88,20 +95,34 @@ class NetEvalMethodNormal(NetEvalMethod):
 
             plt.figure()
             plt.grid()
-            plt.plot(ssrc_info[ssrc]["delay_list"])
-            plt.ylabel("packet delay/ms")
-            plt.xlabel("packets count")
+            min_delay = np.min(ssrc_info[ssrc]["delay_list"])
+            with open(delay_log_path,"w") as f:
+                f.write("ssrc=%s\n" %(str(ssrc)))
+                for i in range(len(ssrc_info[ssrc]["delay_list"])):
+                    f.write("time: %.3f qdelay: %d\n" %(ssrc_info[ssrc]["recv_timestamp"][i], ssrc_info[ssrc]["delay_list"][i]-min_delay))
+            plt.plot(ssrc_info[ssrc]["recv_timestamp"], [i-min_delay for i in ssrc_info[ssrc]["delay_list"]])
+            plt.ylabel("queue delay/ms", fontsize=14)
+            plt.xlabel("time/s", fontsize=14)
+            plt.tick_params(labelsize=16)
             delay_pencentile_95 = np.percentile(ssrc_info[ssrc]["delay_list"], 95, interpolation="nearest")
-            print("delay_95%:", delay_pencentile_95,"ms")
-            plt.title("delay_95%="+str(delay_pencentile_95)+"ms")
+            avg_delay = np.average(ssrc_info[ssrc]["delay_list"])
+
+            print("delay_95%:", delay_pencentile_95-min_delay,"ms")
+            print("avg_delay:", round(avg_delay-min_delay,3),"ms")
+            plt.title("avg_qdelay="+str(round(avg_delay-min_delay,3))+"ms",fontsize=14)
             plt.savefig("result/ssrc_" + str(ssrc) + "_delay.png")
 
             plt.figure()
             plt.plot(ssrc_info[ssrc]["recv_rate"])
+            with open(tput_log_path,"w") as f:
+                f.write("ssrc=%s\n" %(str(ssrc)))
+                for i in ssrc_info[ssrc]["recv_rate"]:
+                    f.write("%.3f\n" %(i))
             plt.grid()
-            plt.ylabel("receive rate/kbps")
-            plt.xlabel("time/s")
-            plt.title("throughput="+str(round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3))+"Kbps")
+            plt.ylabel("receive rate/kbps",fontsize=14)
+            plt.xlabel("time/s",fontsize=14)
+            plt.tick_params(labelsize=12)
+            plt.title("avg_throughput="+str(round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3))+"kbps",fontsize=14)
             print("avg throughput:", round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3),"kbps")
             plt.savefig("result/ssrc_" + str(ssrc) + "_rate.png")
         return network_score
