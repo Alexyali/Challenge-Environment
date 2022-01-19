@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-# draw combine delay_list
+# draw delay_list
 
 gcc_delay_log = "paper_result/gcc_delay.log"
 cldcc_delay_log = "paper_result/cldcc_delay.log"
@@ -29,7 +29,7 @@ cldcc_recv_timestamp = []
 cldcc_delay_list, cldcc_recv_timestamp = get_delay_list(cldcc_delay_log)
 
 plt.figure(figsize=(12,5))
-plt.plot(gcc_recv_timestamp, gcc_delay_list,color="red",label="Trendline-GCC")
+plt.plot(gcc_recv_timestamp, gcc_delay_list,color="red",linestyle="--",label="Trendline-GCC")
 plt.plot(cldcc_recv_timestamp, cldcc_delay_list,color="blue", label="RTC-CLDCC")
 plt.legend(fontsize=15)
 plt.grid()
@@ -40,6 +40,7 @@ plt.savefig("paper_result/test_delay.png", dpi=300)
 plt.close()
 
 # draw throughput
+
 def get_tput_list(log_file:str):
     tput_list = []
     with open(log_file, "r") as f:
@@ -57,7 +58,7 @@ cldcc_tput_list = []
 cldcc_tput_list = get_tput_list(cldcc_tput_log)
 
 plt.figure(figsize=(12,5))
-plt.plot(gcc_tput_list,color="red",label="Trendline-GCC")
+plt.plot(gcc_tput_list,color="red",linestyle="--",label="Trendline-GCC")
 plt.plot(cldcc_tput_list,color="blue", label="RTC-CLDCC")
 plt.legend(fontsize=15)
 plt.grid()
