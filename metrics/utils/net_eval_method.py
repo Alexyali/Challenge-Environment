@@ -4,11 +4,15 @@
 from utils.net_info import NetInfo
 import numpy as np
 from abc import ABC, abstractmethod
-import json
+import csv
+# import json
 import matplotlib.pyplot as plt
 
 delay_log_path = "/home/alex/Challenge-Environment/paper_result/cldcc_delay.log"
 tput_log_path = "/home/alex/Challenge-Environment/paper_result/cldcc_tput.log"
+result_csv_path = "/home/alex/Challenge-Environment/result.csv"
+condition = "none"
+algorithm = "RTC-CLDCC"
 
 class NetEvalMethod(ABC):
     @abstractmethod
@@ -84,13 +88,13 @@ class NetEvalMethodNormal(NetEvalMethod):
         for ssrc in ssrc_info:
             if len(ssrc_info[ssrc]["delay_list"]) < 10:
                 continue
-            f = open("result/ssrc_" + str(ssrc) + ".log", "w")
+            #f = open("result/ssrc_" + str(ssrc) + ".log", "w")
             ssrc_info[ssrc]["avg_loss_rate"] = avg_loss_rate
             ssrc_info[ssrc]["avg_recv_rate_score"] = avg_recv_rate_score
             ssrc_info[ssrc]["avg_delay_score"] = avg_delay_score
             ssrc_info[ssrc]["network_score"] = network_score
-            f.write(json.dumps(ssrc_info[ssrc]))
-            f.close()
+            #f.write(json.dumps(ssrc_info[ssrc]))
+            #f.close()
             print("ssrc:", ssrc)
 
             plt.figure()
@@ -110,7 +114,7 @@ class NetEvalMethodNormal(NetEvalMethod):
             print("delay_95%:", delay_pencentile_95-min_delay,"ms")
             print("avg_delay:", round(avg_delay-min_delay,3),"ms")
             plt.title("avg_qdelay="+str(round(avg_delay-min_delay,3))+"ms",fontsize=14)
-            plt.savefig("result/ssrc_" + str(ssrc) + "_delay.png")
+            #plt.savefig("result/ssrc_" + str(ssrc) + "_delay.png")
 
             plt.figure()
             plt.plot(ssrc_info[ssrc]["recv_rate"])
@@ -124,5 +128,17 @@ class NetEvalMethodNormal(NetEvalMethod):
             plt.tick_params(labelsize=12)
             plt.title("avg_throughput="+str(round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3))+"kbps",fontsize=14)
             print("avg throughput:", round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3),"kbps")
-            plt.savefig("result/ssrc_" + str(ssrc) + "_rate.png")
+            #plt.savefig("result/ssrc_" + str(ssrc) + "_rate.png")
+
+            with open(result_csv_path, 'a', encoding='utf8') as f:
+                csv_writer = csv.writer(f)
+                csv_writer.writerow([
+                   algorithm,
+                   condition,
+                   round(avg_delay-min_delay,3),
+                   delay_pencentile_95-min_delay,
+                   round(np.mean(ssrc_info[ssrc]["recv_rate"]), 3),
+                   round(ssrc_info[ssrc]["avg_loss_rate"], 2),
+                   ssrc
+                ])
         return network_score
