@@ -1,12 +1,15 @@
 import matplotlib.pyplot as plt
+import os
 
 # draw delay_list
+path = os.getcwd()
+data_dir = "/paper_result/"
 
-gcc_delay_log = "paper_result/gcc_delay.log"
-cldcc_delay_log = "paper_result/cldcc_delay.log"
+gcc_delay_log = path + data_dir + "gcc_delay.log"
+cldcc_delay_log = path + data_dir + "cldcc_delay.log"
 
-gcc_tput_log = "paper_result/gcc_tput.log"
-cldcc_tput_log = "paper_result/cldcc_tput.log"
+gcc_tput_log = path + data_dir + "gcc_tput.log"
+cldcc_tput_log = path + data_dir + "cldcc_tput.log"
 
 def get_delay_list(log_file:str):
     delay = []
