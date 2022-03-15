@@ -4,15 +4,13 @@
 from utils.net_info import NetInfo
 import numpy as np
 from abc import ABC, abstractmethod
-import csv
-# import json
 import matplotlib.pyplot as plt
+import csv
+import os
 
-delay_log_path = "/home/alex/Challenge-Environment/paper_result/cldcc_delay.log"
-tput_log_path = "/home/alex/Challenge-Environment/paper_result/cldcc_tput.log"
-result_csv_path = "/home/alex/Challenge-Environment/result.csv"
-condition = "none"
-algorithm = "RTC-CLDCC"
+work_path = os.getcwd()
+result_csv_path = work_path + "/result.csv"
+output_dir = "/paper_result/"
 
 class NetEvalMethod(ABC):
     @abstractmethod
@@ -31,7 +29,9 @@ class NetEvalMethodNormal(NetEvalMethod):
         self.max_delay = max_delay
         self.ground_recv_rate = ground_recv_rate
 
-    def eval(self, dst_audio_info : NetInfo):
+    def eval(self, dst_audio_info : NetInfo, algorithm : str, condition : str):
+        delay_log_path = work_path + output_dir + algorithm + "_delay.log"
+        tput_log_path = work_path + output_dir + algorithm + "_tput.log"
         net_data = dst_audio_info.net_data
         ssrc_info = {}
 
@@ -95,6 +95,7 @@ class NetEvalMethodNormal(NetEvalMethod):
             ssrc_info[ssrc]["network_score"] = network_score
             #f.write(json.dumps(ssrc_info[ssrc]))
             #f.close()
+            print("algorithm:", algorithm)
             print("ssrc:", ssrc)
 
             plt.figure()

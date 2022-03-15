@@ -19,9 +19,9 @@ class NetworkEvaluation():
         self.eval_method = eval_method
         self.args = args
 
-    def eval(self, dst_network_path):
+    def eval(self, dst_network_path, algo, cond):
         dst_network_info = NetInfo(dst_network_path)
-        ret = self.eval_method.eval(dst_network_info)
+        ret = self.eval_method.eval(dst_network_info, algo, cond)
 
         return ret
 
@@ -33,9 +33,9 @@ def get_network_score(args):
         eval_method = NetEvalMethodNormal(args.max_delay, args.ground_recv_rate)
     else:
         raise ValueError("Not supoort such method to evaluate network")
-    
+
     network_eval_tool = NetworkEvaluation(eval_method, args)
-    network_out = network_eval_tool.eval(args.dst_network_log)
+    network_out = network_eval_tool.eval(args.dst_network_log, args.algo, args.cond)
 
     return network_out
 
@@ -50,19 +50,21 @@ def init_network_argparse():
     parser.add_argument("--dst_network_log", type=str, required=True, default=None, help="the path of network log.")
     parser.add_argument("--max_delay", type=float, default=400, help="the max packet delay.")
     parser.add_argument("--ground_recv_rate", type=float, default=500, help="the receive rate of a special scenario ground truth.")
+    parser.add_argument("--algo", type=str, default="gcc", required=True, choices=["gcc", "cldcc"], help="congestion control algorithm chosen by alphartc")
+    parser.add_argument("--cond", type=str, default="none", help="running condition for alphartc demo")
 
     return parser
-    
+
 
 if __name__ == "__main__":
     parser = init_network_argparse()
     args = parser.parse_args()
     if args.scenario:
         args = get_remote_ground(args)
-    
-    out_dict = {}    
+
+    out_dict = {}
     out_dict["network"] = get_network_score(args)
-        
+
     if args.output:
         with open(args.output, 'w') as f:
             f.write(json.dumps(out_dict))
