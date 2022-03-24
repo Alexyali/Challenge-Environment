@@ -60,5 +60,5 @@ $ sh eval.sh
 - 运行`draw_result.py`，分别导出gcc和cldcc算法的延迟对比图和吞吐量对比图，并保存在`paper_result`目录下。
 
 ```shell
-$ python3 draw_result.py
+$ python3 draw_result.py --schemes "gcc cldcc" --data_dir "paper_result/"
 ```

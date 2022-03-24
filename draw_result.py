@@ -1,15 +1,7 @@
+import argparse
 import matplotlib.pyplot as plt
-import os
 
-# draw delay_list
-path = os.getcwd()
-data_dir = "/paper_result/"
-
-gcc_delay_log = path + data_dir + "gcc_delay.log"
-cldcc_delay_log = path + data_dir + "cldcc_delay.log"
-
-gcc_tput_log = path + data_dir + "gcc_tput.log"
-cldcc_tput_log = path + data_dir + "cldcc_tput.log"
+# draw delay figure
 
 def get_delay_list(log_file:str):
     delay = []
@@ -23,26 +15,25 @@ def get_delay_list(log_file:str):
             recv_rate.append(float(data[1]))
     return delay, recv_rate
 
-gcc_delay_list = []
-gcc_recv_timestamp = []
-gcc_delay_list, gcc_recv_timestamp = get_delay_list(gcc_delay_log)
+def draw_delay_fig(cc_list:list, data_dir:str):
 
-cldcc_delay_list = []
-cldcc_recv_timestamp = []
-cldcc_delay_list, cldcc_recv_timestamp = get_delay_list(cldcc_delay_log)
+    plt.figure(figsize=(12,5))
+    for cc in cc_list:
+        delay_log_path = data_dir + cc + "_delay.log"
+        delay_list = []
+        timestamp_list = []
+        delay_list, timestamp_list = get_delay_list(delay_log_path)
+        plt.plot(timestamp_list, delay_list, label=cc)
 
-plt.figure(figsize=(12,5))
-plt.plot(gcc_recv_timestamp, gcc_delay_list,color="red",linestyle="--",label="Trendline-GCC")
-plt.plot(cldcc_recv_timestamp, cldcc_delay_list,color="blue", label="RTC-CLDCC")
-plt.legend(fontsize=15)
-plt.grid()
-plt.tick_params(labelsize=14)
-plt.xlabel("time/s", fontsize=15)
-plt.ylabel("queue delay/ms", fontsize=15)
-plt.savefig("paper_result/test_delay.png", dpi=300)
-plt.close()
+    plt.grid()
+    plt.legend(fontsize=15)
+    plt.tick_params(labelsize=14)
+    plt.xlabel("time/s", fontsize=15)
+    plt.ylabel("queue delay/ms", fontsize=15)
+    plt.savefig(data_dir + "cmp_delay.png", dpi=300)
+    plt.close()
 
-# draw throughput
+# draw throughput figure
 
 def get_tput_list(log_file:str):
     tput_list = []
@@ -54,19 +45,33 @@ def get_tput_list(log_file:str):
             tput_list.append(float(data))
     return tput_list
 
-gcc_tput_list = []
-gcc_tput_list = get_tput_list(gcc_tput_log)
+def draw_tput_fig(cc_list:list, data_dir:str):
 
-cldcc_tput_list = []
-cldcc_tput_list = get_tput_list(cldcc_tput_log)
+    plt.figure(figsize=(12,5))
+    for cc in cc_list:
+        tput_log_path = data_dir + cc + "_tput.log"
+        tput_list = get_tput_list(tput_log_path)
+        plt.plot(tput_list, label=cc)
 
-plt.figure(figsize=(12,5))
-plt.plot(gcc_tput_list,color="red",linestyle="--",label="Trendline-GCC")
-plt.plot(cldcc_tput_list,color="blue", label="RTC-CLDCC")
-plt.legend(fontsize=15)
-plt.grid()
-plt.tick_params(labelsize=14)
-plt.xlabel("time/s", fontsize=15)
-plt.ylabel("throughput/kbps", fontsize=15)
-plt.savefig("paper_result/test_tput.png", dpi=300)
-plt.close()
+    plt.grid()
+    plt.legend(fontsize=15)
+    plt.tick_params(labelsize=14)
+    plt.xlabel("time/s", fontsize=15)
+    plt.ylabel("throughput/kbps", fontsize=15)
+    plt.savefig(data_dir + "cmp_tput.png", dpi=300)
+    plt.close()
+
+def init_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--schemes", type=str, required=True, help="congestion control schemes, such as gcc or cldcc")
+    parser.add_argument("--data_dir", type=str, default=None, required=True, help="data folder")
+
+    return parser
+
+if __name__ == "__main__":
+    parser = init_args()
+    args = parser.parse_args()
+    cc_list = args.schemes
+    cc_list = cc_list.strip().split()
+    draw_delay_fig(cc_list, args.data_dir)
+    draw_tput_fig(cc_list, args.data_dir)

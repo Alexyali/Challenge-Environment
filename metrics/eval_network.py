@@ -50,7 +50,7 @@ def init_network_argparse():
     parser.add_argument("--dst_network_log", type=str, required=True, default=None, help="the path of network log.")
     parser.add_argument("--max_delay", type=float, default=400, help="the max packet delay.")
     parser.add_argument("--ground_recv_rate", type=float, default=500, help="the receive rate of a special scenario ground truth.")
-    parser.add_argument("--algo", type=str, default="gcc", required=True, choices=["gcc", "cldcc"], help="congestion control algorithm chosen by alphartc")
+    parser.add_argument("--algo", type=str, default="gcc", required=True, help="congestion control algorithm chosen by alphartc")
     parser.add_argument("--cond", type=str, default="none", help="running condition for alphartc demo")
 
     return parser
